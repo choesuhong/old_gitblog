@@ -120,6 +120,7 @@ layout: default
 
 {% if site.disqus_shortname %}
 {% unless page.disqus_disabled %}
+
 <section class="disqus">
   <div id="disqus_thread"></div>
   <script type="text/javascript">
@@ -139,4 +140,17 @@ layout: default
 {% endif %}
 
 </div>
+</div>
+
+<div class="col-lg-8 col-md-10 mx-auto">
+  <hr />
+  
+  <script src="https://utteranc.es/client.js"
+        repo="choesuhong/choesuhong.github.io"
+        issue-term="url"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+  </script>
+  
 </div>
