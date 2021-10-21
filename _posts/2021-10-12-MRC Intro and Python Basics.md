@@ -1,11 +1,12 @@
 ---
 layout: post
-title:  "MRC Intro & Python Basics"
+title:  "MRC Intro and Python Basics"
 date:   2021-10-12
 author: choesuhong
 categories: nlp-Pstage
 tags: ['nlp','Pstage','MRC']
 use_math: true
+published: true
 ---
 
 # MRC(기계독해) Intro & Python Basics

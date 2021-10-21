@@ -6,6 +6,7 @@ author: choesuhong
 categories: nlp-Ustage
 tags: ['nlp','UstageW']
 use_math: true
+published: true
 ---
 
 # 목표

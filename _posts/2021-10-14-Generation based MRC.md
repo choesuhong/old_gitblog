@@ -6,6 +6,7 @@ author: choesuhong
 categories: nlp-Pstage
 tags: ['nlp','Pstage','MRC']
 use_math: true
+published: true
 ---
 
 # Extraction-based MRC
