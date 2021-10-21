@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "MRC Intro & Python Basics"
-date:   2021-10-12T14:25:52-05:00
+date:   2021-10-12
 author: choesuhong
 categories: nlp-Pstage
 tags: ['nlp','Pstage','MRC']

@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Extraction-based MRC"
-date:   2021-10-13T14:25:52-05:00
+date:   2021-10-13
 author: choesuhong
 categories: nlp-Pstage
 tags: ['nlp','Pstage','MRC']
