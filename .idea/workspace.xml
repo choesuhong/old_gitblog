@@ -7,7 +7,6 @@
     <list default="true" id="f23f7170-8ca5-427e-bb46-43177f1c846e" name="변경" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/_config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/_posts/2021-09-13-Intro to NLP, Bag of Words.md" beforeDir="false" afterPath="$PROJECT_DIR$/_posts/2021-09-13-Intro to NLP, Bag of Words.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,7 +47,7 @@
       <updated>1634717223911</updated>
       <workItem from="1634717228922" duration="2280000" />
       <workItem from="1634736358435" duration="3000" />
-      <workItem from="1634776670476" duration="4018000" />
+      <workItem from="1634776670476" duration="4503000" />
     </task>
     <servers />
   </component>
