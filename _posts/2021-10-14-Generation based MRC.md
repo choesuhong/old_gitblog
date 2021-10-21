@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Generation based MRC"
-date:   2021-10-14
+date:   2021-10-14 11:40:00 +0900
 author: choesuhong
 categories: nlp-Pstage
 tags: ['nlp','Pstage','MRC']

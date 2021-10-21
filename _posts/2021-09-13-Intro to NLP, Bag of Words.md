@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Intro to NLP, Bag-of-Words"
-date:   2021-09-13
+date:   2021-09-13 11:40:00 +0900
 author: choesuhong
 categories: nlp-Ustage
 tags: ['nlp','UstageW']
