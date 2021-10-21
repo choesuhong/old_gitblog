@@ -9,159 +9,180 @@ use_math: true
 published: true
 ---
 
-# Extraction-based MRC
 
----------------------
 
-## 목표
+# Generation-based MRC
 
-### 실제 추출기반 기계독해를 어떻게 풀까?
+--------------------
 
-- #### 학습 전 준비해야 할 단계
+## 1. Genertation-based MRC
 
-- #### 모델 학습 단계
+### Generation-based MRC 문제 정의
 
-- #### 추출기반으로 답을 얻어냄
+MRC 문제를 푸는 방법
 
-- #### 얻은 답을 원하는 텍스트 형태로 변형
+1) Extraction-based mrc : context 내 답의 위치를 예측 => 분류 문제 (classification)
 
- 
+![스크린샷 2021-10-20 오전 9.39.37](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%209.39.37.png)
 
-## 1. Extraction-based MRC
+2. Generation-based mrc : 주어진 context와 question을 보고, 답변을 생성 => 생성 문제(generation)
 
------------
+![스크린샷 2021-10-20 오전 9.43.09](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%209.43.09.png)
 
-quesion의 answer이 항상 주어진 context내에 span으로 존제![스크린샷 2021-10-19 오후 2.11.28](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.11.28.png)
+모든 mrc 문제는 generation-based mrc로 치환이 가능함 => 지문내에 정답이 존재해도 생성하면 그만이기 떄문
 
 
 
-### 평가 방법
+### Generation-based MRC 평가 방법
 
-- Exact Match (EM) Score
-- F1-Score 
-  - $Precision = \frac{num(same\_token)}{num(pred\_koekns)}$
-  - $Recall = \frac{num(same\_token)}{num(ground\_tokens)}$
-  - $F 1=\frac{2 \times \text { Precision } \times \text { Recall }}{\text { Precision }+\text { Recall }}$
+extraction MRC와 동일한 평가 한 방법을 사용
 
-![스크린샷 2021-10-19 오후 2.30.27](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.30.27.png)
+1. Exact Match (EM) Score
+2. F1 Score
+3. 루지나 blue스코어를 사용하기도 함
 
-​			Precision과 Recall 을 계산을 해서 evaluation이 가장 높은 갚을 산출함
 
 
+### Generation-based MRC Overview
 
-### Extraction-based MRC Overview
+![스크린샷 2021-10-20 오전 9.47.23](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%209.47.23.png)
 
-![스크린샷 2021-10-19 오후 2.31.56](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.31.56.png)
 
 
+### Generation-based MRC & Extraction-based MRC 비교
 
+1. MRC 모델 구조
 
+   Seq-to-seq PLM 구조 (generation) vs. PLM + Classifier 구조 (extraction)
 
-## 2. Pre-Processing
+2. Loss 계산을 위한 답의 형태 / Prediction의 형태
 
----------
+   Free-form text 형태 (generation) vs. 지문 내 답의 위치 (extraction)
 
-### 입력 형태
+   => Extraction-based MRC: F1 계산을 위해 text로의 별도 변환 과정이 필요
 
-![스크린샷 2021-10-19 오후 2.44.52](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.44.52.png)
+![스크린샷 2021-10-20 오전 9.57.36](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%209.57.36.png)
 
 
 
-### Tokenization
+## 2. Pre-processing
 
-텍스트를 작은 단위(Token)로 나누는 것
+### 입력 표현 - 데이터 예시
 
-- 띄어쓰기 기준, 형태소, subword 여러 단위 토큰 기준이 사용
-- 최근엔 Out-Of-Vocabulary(OOV) 문제를 해결해주고 정보학적으로 이점을 가진 Byte Pair Encoding(BPE)을 주로 사용
+![스크린샷 2021-10-20 오전 10.00.10](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2010.00.10.png)
 
+정답 그대로 넘기는 형태
 
 
-WordPiece Tokenzier 사용 예시
 
-![스크린샷 2021-10-19 오후 2.48.17](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.48.17.png)
+### 입력 표현 - 토큰화
 
-직관적으로 표현한다면 => 자주 나오는 단어는 합쳐서 표현, 덜 나오는 단어들은 나누어서 표현
+Tokenization : 텍스트를 의미를 가진 작은 단위로 나눈 것 (형태소)
 
+- Extraction-based MRC 와 같이 WordPiece Tokenizer 를 사용함
+  - WordPiece Tokenizer 사전학습 단계에서 먼저 학습에 사용한 전체 데이터 집합(Corpus)에 대해서 구축되어 있어야함
+  - 구축 과정에서 미리 각 단어 토큰들에 대해 순서대로 번호(인덱스)를 부여해둠
+- Tokenizer 은 입력 텍스트를 토큰화한 뒤, 각 토큰을 미리 만들어둔 단어 사전에 따라 인덱스로 변환함
 
 
-### Special Tokens
 
-![스크린샷 2021-10-19 오후 2.52.15](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.52.15.png)
+WordPiece Tokenizer 사용 예시
 
-<center>before tokenizer</center>
+![스크린샷 2021-10-20 오전 10.04.39](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2010.04.39.png)
 
-![스크린샷 2021-10-19 오후 2.55.31](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.55.31.png)
 
-<center>after tokenizer</center>
 
+=> 인덱스로 바뀐 질문을 보통 input_ids(또는 input_token_ids)로 부름
 
+=> 모델의 기본 입력은 Input_ids만 필요하나, 그 외 추가적인 정보가 필요함
 
-### Attention Mask
 
-- 입력 시퀸스 중에서 attention 을 연산할 때 무시할 토큰을 표시
-- 0은 무시, 1은 연산에 표함
-- 보통 [PAD]와 같은 의미가 없는 특수토큰을 무시하기 위해 사용
 
-![스크린샷 2021-10-19 오후 2.58.24](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.58.24.png)
+### 입력표현 - Special Token
 
-모델 입장에서 무시할 것들을 알려주는 masking 작업
+학습 시에만 사용되며 단어 자체의 의미는 가지지 않는 특별한 ㅋ토큰
 
+- SOS(start Of Sentence), EOS(End Of Sentence), CLS, SEP, PAD, UNK .. 등등
 
+  => Extraction-based MRC 에선 CLS, SEP, PAD 토큰을 사용
 
-### Token Type IDs
+  => Genration-based MRC 에서도 PAD 토큰은 사용됨. CLS, SEP 토큰 또한 사용할 수 있으나, 대신 자연어를 이용하여 정해진 텍스트 포맷으로 데이터를 생성
 
-입력이 2개이상의 시퀸스일 떄 (예: 질문 & 지문), 각각에게 ID를 부여하여 모델이 구분해서 해석하도록 유도
+  ![스크린샷 2021-10-20 오전 10.08.08](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2010.08.08.png)
 
-![스크린샷 2021-10-19 오후 3.00.27](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%203.00.27.png)
 
 
+### 입력 표현 - additional information
 
-### 모델 출력값
+Attention mask
 
-- 정답은 문서내 존재하는 연속된 단어토큰 (span)이므로, span의 시작과 끝 위치를 알면 정답을 맞출 수 있음
-- Extraction-based에선 답안을 생성하기 보다, 시작위치와 끝위치를 예측하도록 학습함. 즉 Token Classification문제로 치환
+- Extraction-based MRC 와 똑같이 어텐션 연산을 수행할 지 결정하는 어넽션 마스크 존재
 
-![스크린샷 2021-10-19 오후 3.04.44](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%203.04.44.png)
 
-답안을 생성하게 만든다면 국+육군+부+참모+총장이 될수 있는 경우가 있기 때문에 위치를 예측하도록 하여 분류문제로 치환하였다.
 
+Token type ids
 
+- BERT 와 달리 BART 에서는 입력시퀸스에 대한 구분이 없어 token_type_ids 가 존재하지 않음
+- 따라서 Extraction-based MRC 와 달리 입력에 token_type_ids 가 들어가지 않음
 
-## 3. Fine-tuning
+![스크린샷 2021-10-20 오전 10.13.41](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2010.13.41.png)
 
------------
+why? token_type_ids로 구분을 해주려고 했으나 실질적으로 영향이 없어 뺸것으로 보임
 
-### Fine-tuning BERT
 
 
+### 출력 표현 - 정답 출력
 
-![스크린샷 2021-10-19 오후 3.08.00](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%203.08.00.png)
+Sequence of token ids
 
+- Extraction-based MRC에선 텍스트를 생성해내는 대신 시작/끝 토큰의 위치를 출력하는 것이 모델의 최종 목표였음
+- Generation-based MRC는 그보다 조금 더 어려운 실제 텍스트를 생성하는 과제를 수행
+- 전체 시퀸스의 각 위치 마다 모델이 아는 모든 단어들 중 하나의 단어를 맞추는 classification 문제
 
+![스크린샷 2021-10-20 오전 10.17.26](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2010.17.26.png)
+
+
+
+도식화 그림
+
+![스크린샷 2021-10-20 오전 10.18.12](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2010.18.12.png)
+
+
+
+## 3. Model
+
+### BART
+
+기계 독해, 기계 번역, 요약, 대화 등 sequence to sequence 문제의 pre-training을 위한 denoising autoencoder
+
+![스크린샷 2021-10-20 오전 11.43.21](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2011.43.21.png)
+
+
+
+### BART Encoder & Decoder
+
+- BART의 인코더는 BERT처럼 bi-directional
+- BART의 디코더는 GPT처럼 uni-directional(autoregressive)
+
+![스크린샷 2021-10-20 오전 11.45.58](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2011.45.58.png)
+
+
+
+### Pre-training BART
+
+BART는 텍스트에 노이즈를 주고 원래 텍스트를 복구하는 문제를 푸는 것으로 pre-training함
+
+![스크린샷 2021-10-20 오전 11.47.37](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2011.47.37.png)
+
+![스크린샷 2021-10-20 오전 11.48.42](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2011.48.42.png)
 
 
 
 ## 4. Post-processing
 
---------------
+### Searching
 
-### 불가능한 답 제거하기
-
-다음과 같은 경우 candidate list에서 제거
-
-- End position 이 start position보다 앞에 있는 경우 (start=90, end=80)
-- 예측한 위치가 context를 벗어난 경우 (question 위치쪽에 답이 나온 경우)
-- 미리 설정한 max_answer_length 보다 길이가 더 긴 경우
-
-
-
-### 최적의 답안 찾기
-
-1. Start/end position prediction에서 score (logits)가 가장 높은 N개를 각각 찾는다.
-2. 불가능한 start/end 조합을 제거한다.
-3. 가능한 조합들을 score의 합이 큰 순서대로 정렬한다.
-4. score가 가장 큰 조합을 최종 예측으로 선정한다.
-5. Top-k 가 필요한 경우 차례대로 내보낸다.
+![스크린샷 2021-10-20 오전 11.50.14](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2011.50.14.png)
 
 
 
