@@ -1,0 +1,933 @@
+Index: _posts/2021-10-13-Extraction based MRC.md
+===================================================================
+diff --git a/_posts/2021-10-13-Extraction based MRC.md b/_posts/2021-10-13-Extraction based MRC.md
+deleted file mode 100644
+--- a/_posts/2021-10-13-Extraction based MRC.md	(revision 00adce5c8dbe3c0ef356eeb3be9908d6c7a417f8)
++++ /dev/null	(revision 00adce5c8dbe3c0ef356eeb3be9908d6c7a417f8)
+@@ -1,168 +0,0 @@
+----
+-layout: post
+-title:  "Extraction based MRC"
+-date:   2021-10-13 11:40:00 +0900
+-author: choesuhong
+-categories: nlp-Pstage
+-tags: ['nlp','Pstage','MRC']
+-use_math: true
+-published: true
+----
+-
+-# Extraction-based MRC
+-
+----------------------
+-
+-## 목표
+-
+-### 실제 추출기반 기계독해를 어떻게 풀까?
+-
+-- #### 학습 전 준비해야 할 단계
+-
+-- #### 모델 학습 단계
+-
+-- #### 추출기반으로 답을 얻어냄
+-
+-- #### 얻은 답을 원하는 텍스트 형태로 변형
+-
+- 
+-
+-## 1. Extraction-based MRC
+-
+------------
+-
+-quesion의 answer이 항상 주어진 context내에 span으로 존제![스크린샷 2021-10-19 오후 2.11.28](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.11.28.png)
+-
+-
+-
+-### 평가 방법
+-
+-- Exact Match (EM) Score
+-- F1-Score 
+-  - $Precision = \frac{num(same\_token)}{num(pred\_koekns)}$
+-  - $Recall = \frac{num(same\_token)}{num(ground\_tokens)}$
+-  - $F 1=\frac{2 \times \text { Precision } \times \text { Recall }}{\text { Precision }+\text { Recall }}$
+-
+-![스크린샷 2021-10-19 오후 2.30.27](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.30.27.png)
+-
+-​			Precision과 Recall 을 계산을 해서 evaluation이 가장 높은 갚을 산출함
+-
+-
+-
+-### Extraction-based MRC Overview
+-
+-![스크린샷 2021-10-19 오후 2.31.56](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.31.56.png)
+-
+-
+-
+-
+-
+-## 2. Pre-Processing
+-
+----------
+-
+-### 입력 형태
+-
+-![스크린샷 2021-10-19 오후 2.44.52](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.44.52.png)
+-
+-
+-
+-### Tokenization
+-
+-텍스트를 작은 단위(Token)로 나누는 것
+-
+-- 띄어쓰기 기준, 형태소, subword 여러 단위 토큰 기준이 사용
+-- 최근엔 Out-Of-Vocabulary(OOV) 문제를 해결해주고 정보학적으로 이점을 가진 Byte Pair Encoding(BPE)을 주로 사용
+-
+-
+-
+-WordPiece Tokenzier 사용 예시
+-
+-![스크린샷 2021-10-19 오후 2.48.17](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.48.17.png)
+-
+-직관적으로 표현한다면 => 자주 나오는 단어는 합쳐서 표현, 덜 나오는 단어들은 나누어서 표현
+-
+-
+-
+-### Special Tokens
+-
+-![스크린샷 2021-10-19 오후 2.52.15](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.52.15.png)
+-
+-<center>before tokenizer</center>
+-
+-![스크린샷 2021-10-19 오후 2.55.31](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.55.31.png)
+-
+-<center>after tokenizer</center>
+-
+-
+-
+-### Attention Mask
+-
+-- 입력 시퀸스 중에서 attention 을 연산할 때 무시할 토큰을 표시
+-- 0은 무시, 1은 연산에 표함
+-- 보통 [PAD]와 같은 의미가 없는 특수토큰을 무시하기 위해 사용
+-
+-![스크린샷 2021-10-19 오후 2.58.24](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.58.24.png)
+-
+-모델 입장에서 무시할 것들을 알려주는 masking 작업
+-
+-
+-
+-### Token Type IDs
+-
+-입력이 2개이상의 시퀸스일 떄 (예: 질문 & 지문), 각각에게 ID를 부여하여 모델이 구분해서 해석하도록 유도
+-
+-![스크린샷 2021-10-19 오후 3.00.27](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%203.00.27.png)
+-
+-
+-
+-### 모델 출력값
+-
+-- 정답은 문서내 존재하는 연속된 단어토큰 (span)이므로, span의 시작과 끝 위치를 알면 정답을 맞출 수 있음
+-- Extraction-based에선 답안을 생성하기 보다, 시작위치와 끝위치를 예측하도록 학습함. 즉 Token Classification문제로 치환
+-
+-![스크린샷 2021-10-19 오후 3.04.44](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%203.04.44.png)
+-
+-답안을 생성하게 만든다면 국+육군+부+참모+총장이 될수 있는 경우가 있기 때문에 위치를 예측하도록 하여 분류문제로 치환하였다.
+-
+-
+-
+-## 3. Fine-tuning
+-
+------------
+-
+-### Fine-tuning BERT
+-
+-
+-
+-![스크린샷 2021-10-19 오후 3.08.00](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%203.08.00.png)
+-
+-
+-
+-
+-
+-## 4. Post-processing
+-
+---------------
+-
+-### 불가능한 답 제거하기
+-
+-다음과 같은 경우 candidate list에서 제거
+-
+-- End position 이 start position보다 앞에 있는 경우 (start=90, end=80)
+-- 예측한 위치가 context를 벗어난 경우 (question 위치쪽에 답이 나온 경우)
+-- 미리 설정한 max_answer_length 보다 길이가 더 긴 경우
+-
+-
+-
+-### 최적의 답안 찾기
+-
+-1. Start/end position prediction에서 score (logits)가 가장 높은 N개를 각각 찾는다.
+-2. 불가능한 start/end 조합을 제거한다.
+-3. 가능한 조합들을 score의 합이 큰 순서대로 정렬한다.
+-4. score가 가장 큰 조합을 최종 예측으로 선정한다.
+-5. Top-k 가 필요한 경우 차례대로 내보낸다.
+-
+-
+-
+-
+Index: _posts/2021-10-12-MRC Intro and Python Basics.md
+===================================================================
+diff --git a/_posts/2021-10-12-MRC Intro and Python Basics.md b/_posts/2021-10-12-MRC Intro and Python Basics.md
+deleted file mode 100644
+--- a/_posts/2021-10-12-MRC Intro and Python Basics.md	(revision 00adce5c8dbe3c0ef356eeb3be9908d6c7a417f8)
++++ /dev/null	(revision 00adce5c8dbe3c0ef356eeb3be9908d6c7a417f8)
+@@ -1,71 +0,0 @@
+----
+-layout: post
+-title:  "MRC Intro and Python Basics"
+-date:   2021-10-12 11:40:00 +0900
+-author: choesuhong
+-categories: nlp-Pstage
+-tags: ['nlp','Pstage','MRC']
+-use_math: true
+-published: true
+----
+-
+-# MRC(기계독해) Intro & Python Basics
+-
+----------------
+-
+-## 목차
+-
+-### (MRC)기계독해
+-
+-기계독해란 무엇일까?
+-
+-기계독해는 어떠한 종류가 있을까?
+-
+-그럼 평가는 어떻게 해야할까?
+-
+-
+-
+-### 자연어 처리에 필요한 개념
+-
+-unicode
+-
+-tokenization
+-
+-
+-
+-### KorQuAD
+-
+-실제 기계독해 데이터의 구성
+-
+-
+-
+-### MRC(Machine Reading Comprehension)란?
+-
+-말 그대로 주어진 context를 이해하고, 주어진 (Query/Question)의 답변을 추론하는 문제 
+-
+-![Screen Shot 2021-10-15 at 11.51.15 AM](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/Screen%20Shot%202021-10-15%20at%2011.51.15%20AM.png)
+-
+-
+-
+-지문이 어떤 지문과 관계가 있는지 알기가 어렵기 때문에 질문에 대해 관련된 지문을 찾고 그 지문에서 질문에 대한 답을 내놓음
+-
+-![Screen Shot 2021-10-15 at 11.56.49 AM](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/Screen%20Shot%202021-10-15%20at%2011.56.49%20AM.png)
+-
+-
+-
+-MRC의 종류
+-
+-1. Extractive Answer Datasets - question에 대한 답이 항상 주어진 context의 segment(or span)으로 존재![Screen Shot 2021-10-15 at 12.00.09 PM](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/Screen%20Shot%202021-10-15%20at%2012.00.09%20PM.png)
+-
+-
+-
+-2. Descriptive/Narrative Answer Datasets - context 내에서 추출한 span이 아닌 question을 보고 생성된 sentence (or free-form)의 형태
+-
+-![Screen Shot 2021-10-15 at 12.01.08 PM](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/Screen%20Shot%202021-10-15%20at%2012.01.08%20PM.png)
+-
+-
+-
+-3. Multiple-choice Datasets - question에 대한 답을 여러 개의 answer candidates 중 하나로 고르는 형태
+-
+-![Screen Shot 2021-10-15 at 12.04.09 PM](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/Screen%20Shot%202021-10-15%20at%2012.04.09%20PM.png)
+-
+Index: _posts/2021-10-14-Generation based MRC.md
+===================================================================
+diff --git a/_posts/2021-10-14-Generation based MRC.md b/_posts/2021-10-14-Generation based MRC.md
+deleted file mode 100644
+--- a/_posts/2021-10-14-Generation based MRC.md	(revision 00adce5c8dbe3c0ef356eeb3be9908d6c7a417f8)
++++ /dev/null	(revision 00adce5c8dbe3c0ef356eeb3be9908d6c7a417f8)
+@@ -1,189 +0,0 @@
+----
+-layout: post
+-title:  "Generation based MRC"
+-date:   2021-10-14 11:40:00 +0900
+-author: choesuhong
+-categories: nlp-Pstage
+-tags: ['nlp','Pstage','MRC']
+-use_math: true
+-published: true
+----
+-
+-
+-
+-# Generation-based MRC
+-
+---------------------
+-
+-## 1. Genertation-based MRC
+-
+-### Generation-based MRC 문제 정의
+-
+-MRC 문제를 푸는 방법
+-
+-1) Extraction-based mrc : context 내 답의 위치를 예측 => 분류 문제 (classification)
+-
+-![스크린샷 2021-10-20 오전 9.39.37](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%209.39.37.png)
+-
+-2. Generation-based mrc : 주어진 context와 question을 보고, 답변을 생성 => 생성 문제(generation)
+-
+-![스크린샷 2021-10-20 오전 9.43.09](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%209.43.09.png)
+-
+-모든 mrc 문제는 generation-based mrc로 치환이 가능함 => 지문내에 정답이 존재해도 생성하면 그만이기 떄문
+-
+-
+-
+-### Generation-based MRC 평가 방법
+-
+-extraction MRC와 동일한 평가 한 방법을 사용
+-
+-1. Exact Match (EM) Score
+-2. F1 Score
+-3. 루지나 blue스코어를 사용하기도 함
+-
+-
+-
+-### Generation-based MRC Overview
+-
+-![스크린샷 2021-10-20 오전 9.47.23](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%209.47.23.png)
+-
+-
+-
+-### Generation-based MRC & Extraction-based MRC 비교
+-
+-1. MRC 모델 구조
+-
+-   Seq-to-seq PLM 구조 (generation) vs. PLM + Classifier 구조 (extraction)
+-
+-2. Loss 계산을 위한 답의 형태 / Prediction의 형태
+-
+-   Free-form text 형태 (generation) vs. 지문 내 답의 위치 (extraction)
+-
+-   => Extraction-based MRC: F1 계산을 위해 text로의 별도 변환 과정이 필요
+-
+-![스크린샷 2021-10-20 오전 9.57.36](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%209.57.36.png)
+-
+-
+-
+-## 2. Pre-processing
+-
+-### 입력 표현 - 데이터 예시
+-
+-![스크린샷 2021-10-20 오전 10.00.10](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2010.00.10.png)
+-
+-정답 그대로 넘기는 형태
+-
+-
+-
+-### 입력 표현 - 토큰화
+-
+-Tokenization : 텍스트를 의미를 가진 작은 단위로 나눈 것 (형태소)
+-
+-- Extraction-based MRC 와 같이 WordPiece Tokenizer 를 사용함
+-  - WordPiece Tokenizer 사전학습 단계에서 먼저 학습에 사용한 전체 데이터 집합(Corpus)에 대해서 구축되어 있어야함
+-  - 구축 과정에서 미리 각 단어 토큰들에 대해 순서대로 번호(인덱스)를 부여해둠
+-- Tokenizer 은 입력 텍스트를 토큰화한 뒤, 각 토큰을 미리 만들어둔 단어 사전에 따라 인덱스로 변환함
+-
+-
+-
+-WordPiece Tokenizer 사용 예시
+-
+-![스크린샷 2021-10-20 오전 10.04.39](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2010.04.39.png)
+-
+-
+-
+-=> 인덱스로 바뀐 질문을 보통 input_ids(또는 input_token_ids)로 부름
+-
+-=> 모델의 기본 입력은 Input_ids만 필요하나, 그 외 추가적인 정보가 필요함
+-
+-
+-
+-### 입력표현 - Special Token
+-
+-학습 시에만 사용되며 단어 자체의 의미는 가지지 않는 특별한 ㅋ토큰
+-
+-- SOS(start Of Sentence), EOS(End Of Sentence), CLS, SEP, PAD, UNK .. 등등
+-
+-  => Extraction-based MRC 에선 CLS, SEP, PAD 토큰을 사용
+-
+-  => Genration-based MRC 에서도 PAD 토큰은 사용됨. CLS, SEP 토큰 또한 사용할 수 있으나, 대신 자연어를 이용하여 정해진 텍스트 포맷으로 데이터를 생성
+-
+-  ![스크린샷 2021-10-20 오전 10.08.08](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2010.08.08.png)
+-
+-
+-
+-### 입력 표현 - additional information
+-
+-Attention mask
+-
+-- Extraction-based MRC 와 똑같이 어텐션 연산을 수행할 지 결정하는 어넽션 마스크 존재
+-
+-
+-
+-Token type ids
+-
+-- BERT 와 달리 BART 에서는 입력시퀸스에 대한 구분이 없어 token_type_ids 가 존재하지 않음
+-- 따라서 Extraction-based MRC 와 달리 입력에 token_type_ids 가 들어가지 않음
+-
+-![스크린샷 2021-10-20 오전 10.13.41](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2010.13.41.png)
+-
+-why? token_type_ids로 구분을 해주려고 했으나 실질적으로 영향이 없어 뺸것으로 보임
+-
+-
+-
+-### 출력 표현 - 정답 출력
+-
+-Sequence of token ids
+-
+-- Extraction-based MRC에선 텍스트를 생성해내는 대신 시작/끝 토큰의 위치를 출력하는 것이 모델의 최종 목표였음
+-- Generation-based MRC는 그보다 조금 더 어려운 실제 텍스트를 생성하는 과제를 수행
+-- 전체 시퀸스의 각 위치 마다 모델이 아는 모든 단어들 중 하나의 단어를 맞추는 classification 문제
+-
+-![스크린샷 2021-10-20 오전 10.17.26](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2010.17.26.png)
+-
+-
+-
+-도식화 그림
+-
+-![스크린샷 2021-10-20 오전 10.18.12](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2010.18.12.png)
+-
+-
+-
+-## 3. Model
+-
+-### BART
+-
+-기계 독해, 기계 번역, 요약, 대화 등 sequence to sequence 문제의 pre-training을 위한 denoising autoencoder
+-
+-![스크린샷 2021-10-20 오전 11.43.21](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2011.43.21.png)
+-
+-
+-
+-### BART Encoder & Decoder
+-
+-- BART의 인코더는 BERT처럼 bi-directional
+-- BART의 디코더는 GPT처럼 uni-directional(autoregressive)
+-
+-![스크린샷 2021-10-20 오전 11.45.58](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2011.45.58.png)
+-
+-
+-
+-### Pre-training BART
+-
+-BART는 텍스트에 노이즈를 주고 원래 텍스트를 복구하는 문제를 푸는 것으로 pre-training함
+-
+-![스크린샷 2021-10-20 오전 11.47.37](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2011.47.37.png)
+-
+-![스크린샷 2021-10-20 오전 11.48.42](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2011.48.42.png)
+-
+-
+-
+-## 4. Post-processing
+-
+-### Searching
+-
+-![스크린샷 2021-10-20 오전 11.50.14](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/uPic/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202021-10-20%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%2011.50.14.png)
+-
+-
+-
+-
+Index: .idea/choesuhong.github.io.iml
+===================================================================
+diff --git a/.idea/choesuhong.github.io.iml b/.idea/choesuhong.github.io.iml
+deleted file mode 100644
+--- a/.idea/choesuhong.github.io.iml	(revision 00adce5c8dbe3c0ef356eeb3be9908d6c7a417f8)
++++ /dev/null	(revision 00adce5c8dbe3c0ef356eeb3be9908d6c7a417f8)
+@@ -1,8 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<module type="PYTHON_MODULE" version="4">
+-  <component name="NewModuleRootManager">
+-    <content url="file://$MODULE_DIR$" />
+-    <orderEntry type="inheritedJdk" />
+-    <orderEntry type="sourceFolder" forTests="false" />
+-  </component>
+-</module>
+\ No newline at end of file
+Index: .idea/.gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+--- a/.idea/.gitignore	(revision 00adce5c8dbe3c0ef356eeb3be9908d6c7a417f8)
++++ b/.idea/.gitignore	(date 1635096030000)
+@@ -1,0 +1,8 @@
++# 디폴트 무시된 파일
++/shelf/
++/workspace.xml
++# 에디터 기반 HTTP 클라이언트 요청
++/httpRequests/
++# Datasource local storage ignored files
++/dataSources/
++/dataSources.local.xml
+Index: _posts/2015-04-20-welcome-to-jekyll.markdown
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/_posts/2015-04-20-welcome-to-jekyll.markdown b/_posts/2015-04-20-welcome-to-jekyll.markdown
+new file mode 100755
+--- /dev/null	(date 1635096042000)
++++ b/_posts/2015-04-20-welcome-to-jekyll.markdown	(date 1635096042000)
+@@ -0,0 +1,103 @@
++---
++layout: post
++title:  "한글 테스트"
++date:   2015-04-20 08:43:59
++author: Ben Centra
++categories: Jekyll
++tags:	jekyll welcome
++cover:  "/assets/instacode.png"
++---
++
++You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run `jekyll serve`, which launches a web server and auto-regenerates your site when a file is updated.
++
++## Adding New Posts
++
++To add new posts, simply add a file in the `_posts` directory that follows the convention `YYYY-MM-DD-name-of-post.ext` and includes the necessary front matter. Take a look at the source for this post to get an idea about how it works.
++
++### Tags and Categories
++
++If you list one or more categories or tags in the front matter of your post, they will be included with the post on the page as links. Clicking the link will bring you to an auto-generated archive page for the category or tag, created using the [jekyll-archive][jekyll-archive] gem.
++
++### Cover Images
++
++To add a cover image to your post, set the "cover" property in the front matter with the relative URL of the image (i.e. <code>cover: "/assets/cover_image.jpg"</code>).
++
++### Code Snippets
++
++You can use [highlight.js][highlight] to add syntax highlight code snippets:
++
++Use the [Liquid][liquid] `{% raw %}{% highlight <language> %}{% endraw %}` tag to add syntax highlighting to code snippets.
++
++For instance, this template...
++{% highlight html %}
++{% raw %}{% highlight javascript %}    
++function demo(string, times) {    
++  for (var i = 0; i < times; i++) {    
++    console.log(string);    
++  }    
++}    
++demo("hello, world!", 10);
++{% endhighlight %}{% endraw %}
++{% endhighlight %}
++
++...will come out looking like this:
++
++{% highlight javascript %}
++function demo(string, times) {
++  for (var i = 0; i < times; i++) {
++    console.log(string);
++  }
++}
++demo("hello, world!", 10);
++{% endhighlight %}
++
++Syntax highlighting is done using [highlight.js][highlight]. You can change the active theme in [head.html](https://github.com/bencentra/centrarium/blob/2dcd73d09e104c3798202b0e14c1db9fa6e77bc7/_includes/head.html#L15).
++
++### Blockquotes
++
++> "Blockquotes will be indented, italicized, and given a subdued light gray font. These are good for side comments not directly related to your content, or long quotations from external sources." - Some Smart Guy
++
++### Images
++
++Lightbox has been enabled for images. To create the link that'll launch the lightbox, add <code>data-lightbox</code> and <code>data-title</code> attributes to an <code>&lt;a&gt;</code> tag around your <code>&lt;img&gt;</code> tag. The result is:
++
++<a href="//bencentra.com/assets/images/falcon9_large.jpg" data-lightbox="falcon9-large" data-title="Check out the Falcon 9 from SpaceX">
++  <img src="//bencentra.com/assets/images/falcon9_small.jpg" title="Check out the Falcon 9 from SpaceX">
++</a>
++
++For more information, check out the [Lightbox][lightbox] website.
++
++### Tooltips
++
++With Tippy.js, you can add tooltips to your text with a little bit of HTML and JavaScript. First, create the tooltip trigger: `<span class="tooltip" id="someId">trigger</span>`. Then in a `<script>` tag at the bottom of your page, add some code to initialize the tooltip when the document is ready: `window.tooltips.push(['#someId', { content: "Content" }])`
++
++See the [Tippy.js docs](https://atomiks.github.io/tippyjs/) for additional configuration that you can provide for your tooltips.
++
++You can also use a Liquid `include` to import tooltip text or HTML from an external file: 
++
++```
++window.tooltips.push(['#someOtherId', { content: "{% raw %}{% include tooltips/example.html %}{% endraw %}" }])
++```
++
++To modify the styles for tooltip triggers, find the `.tooltip` class in `_layout.scss`.
++
++Here's an <span class="tooltip" id="someId">example tooltip</span>, and <span class="tooltip" id="someOtherId">here's another</span>.
++
++<br/>
++{% include page_divider.html %}
++
++Check out the [Jekyll docs][jekyll] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll’s dedicated Help repository][jekyll-help].
++
++[jekyll]:      http://jekyllrb.com
++[jekyll-gh]:   https://github.com/jekyll/jekyll
++[jekyll-help]: https://github.com/jekyll/jekyll-help
++[highlight]:   https://highlightjs.org/
++[lightbox]:    http://lokeshdhakar.com/projects/lightbox2/
++[jekyll-archive]: https://github.com/jekyll/jekyll-archives
++[liquid]: https://github.com/Shopify/liquid/wiki/Liquid-for-Designers
++
++<script>
++window.tooltips = window.tooltips || []
++window.tooltips.push(['#someId', { content: "This is the text of the tooltip!" }])
++window.tooltips.push(['#someOtherId', { content: "{% include tooltips/example.html %}", placement: "right" }])
++</script>
+Index: _config.yml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># External plugins\n# See http://ixti.net/software/2013/01/28/using-jekyll-plugins-on-github-pages.html for making `jekyll archives` work.\nplugins:\n  - jekyll-archives # Sorry, not GitHub pages friendly!\n  - jekyll-sitemap\n  - jekyll-paginate-v2\n\nexclude:\n  - \"/vendor/\"\n\n# Site settings\ntitle: 생각하는 개인 공간\nsubtitle: \"공부한 내용들을 최대한 써보자\"\nemail: csoohong64@gmail.com\nname: choesuhong\ndescription: >\n  A simple yet classy theme for your Jekyll website or blog.\n# Base URL of site (i.e. /blog). It should always start with a slash,\n# and never end with a slash. Set it to a blank value if hosting at the\n# root of your server.\nbaseurl: \"\" # the subpath of your site, e.g. /blog/\nurl: \"https://github.com/choesuhong/choesuhong.github.io/\" # the base hostname & protocol for your site\ncover: \"/assets/header_image.jpg\"\nlogo: \"/assets/logo.png\"\n\n# Build settings\nmarkdown: kramdown\ninter_post_navigation: false\nhighlightjs_theme: \"monokai-sublime\"\nfuture: true\n\n# Pagination Settings\n# https://github.com/sverrirs/jekyll-paginate-v2/blob/master/README-GENERATOR.md#site-configuration\npagination:\n  enabled: true\n  per_page: 5\n  permalink: \"/page/:num/\"\n  sort_reverse: true\n\n# Archive settings (see https://github.com/jekyll/jekyll-archives/)\njekyll-archives:\n  enabled:\n    - categories\n    - tags\n  layout: 'archive'\n  permalinks:\n    category: '/category/:name/'\n    tag: '/tag/:name/'\n\n# Disqus comments\n# disqus_shortname: bencentra\n\n# Google analytics\n# ga_tracking_id: \"UA-XXXX-1\"\n\n# Category descriptions (for archive pages)\ndescriptions:\n  - cat: jekyll\n    desc: \"Posts describing Jekyll setup techniques.\"\n\n  - cat: dummy\n    desc: \"Just some placeholder posts, lorem ipsum and the rest.\"\n\n# Social icons and sharing options\n#\n# Social settings are used in two places:\n# * In the footer, as links to your personal profiles\n# * After each blog post for sharing widgets\n#\n# Example:\n#\n# social:\n#   - name: Twitter                         # Name of the service\n#     icon: twitter                         # Font Awesome icon to use (minus fa- prefix)\n#     username: \"@TheBenCentra\"             # (User) Name to display in the footer link\n#     url: https://twitter.com/TheBenCentra # URL of your profile (leave blank to not display in footer)\n#     desc: Follow me on Twitter            # Description to display as link title, etc\n#     share: true                           # Include in the \"Share\" section of posts\nsocial:\n  - name: GitHub\n    icon: github\n    username: bencentra\n    url: https://github.com/choesuhong\n    desc: Fork me on GitHub\n    share: false\n\n  - name: Google+\n    icon: google-plus\n    username: \"\"\n    url: \"\"\n    desc: Add me to your Circles\n    share: true\n\n  - name: YouTube\n    icon: youtube\n    username: \"\"\n    url: \"\"\n    desc: Subscribe on YouTube\n    share: false\n\n  - name: SoundCloud\n    icon: soundcloud\n    username: \"\"\n    url: \"\"\n    desc: Follow me on SoundCloud\n    share: false\n\n  - name: Tumblr\n    icon: tumblr\n    username: \"\"\n    url: \"\"\n    desc: Follow me on Tumblr\n    share: false\n\n  - name: Steam\n    icon: steam\n    username: \"\"\n    url: \"\"\n    desc: Friend me on Steam\n    share: false\n\n  - name: Dribbble\n    icon: dribbble\n    username: \"\"\n    url: \"\"\n    desc: Follow me on Dribble\n    share: false\n\n  - name: Vimeo\n    icon: vimeo-square\n    username: \"\"\n    url: \"\"\n    desc: Follow me on Vimeo\n    share: false\n\n  - name: Vine\n    icon: vine\n    username: \"\"\n    url: \"\"\n    desc: Follow me on Vine\n    share: false\n\n  - name: Reddit\n    icon: reddit\n    username: \"\"\n    url: \"\"\n    desc: Share to Reddit\n    share: true\n\n  - name: \"Hacker News\"\n    icon: hacker-news\n    username: \"\"\n    url: \"\"\n    desc: Share to Hacker News\n    share: false\n\n# Social sharing protocols\n# These are for automatically generating sharing metadata for FB and Twitter\n# OS Protocol is for sharing the source of your site, if you're interested. For more, see osprotocol.com\nprotocols:\n    fb_image: \"/assets/logo.png\"\n    fb_image_width: 612\n    fb_image_height: 605\n    fb_image_type: \"image/png\"\n\n    twitter_image: \"/assets/logo.png\"\n\n    os_repo: \"https://github.com/bencentra/centrarium.com\"\n    os_rcs_type: \"git\"\n    os_src: \"git@github.com:bencentra/centrarium.com.git\"\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/_config.yml b/_config.yml
+--- a/_config.yml	(revision 00adce5c8dbe3c0ef356eeb3be9908d6c7a417f8)
++++ b/_config.yml	(date 1635096030000)
+@@ -9,17 +9,17 @@
+   - "/vendor/"
+ 
+ # Site settings
+-title: 생각하는 개인 공간
+-subtitle: "공부한 내용들을 최대한 써보자"
+-email: csoohong64@gmail.com
+-name: choesuhong
++title: Centrarium
++subtitle: "A simple yet classy theme for your Jekyll website or blog"
++email: blcentra@gmail.com
++name: Ben Centra
+ description: >
+   A simple yet classy theme for your Jekyll website or blog.
+ # Base URL of site (i.e. /blog). It should always start with a slash,
+ # and never end with a slash. Set it to a blank value if hosting at the
+ # root of your server.
+ baseurl: "" # the subpath of your site, e.g. /blog/
+-url: "https://github.com/choesuhong/choesuhong.github.io/" # the base hostname & protocol for your site
++url: "https://choesuhong.github.io/" # the base hostname & protocol for your site
+ cover: "/assets/header_image.jpg"
+ logo: "/assets/logo.png"
+ 
+@@ -27,7 +27,6 @@
+ markdown: kramdown
+ inter_post_navigation: false
+ highlightjs_theme: "monokai-sublime"
+-future: true
+ 
+ # Pagination Settings
+ # https://github.com/sverrirs/jekyll-paginate-v2/blob/master/README-GENERATOR.md#site-configuration
+@@ -77,13 +76,34 @@
+ #     desc: Follow me on Twitter            # Description to display as link title, etc
+ #     share: true                           # Include in the "Share" section of posts
+ social:
++  - name: Twitter
++    icon: twitter
++    username: TheBenCentra
++    url: https://twitter.com/TheBenCentra
++    desc: Follow me on Twitter
++    share: true
++
++  - name: Facebook
++    icon: facebook
++    username: thebencentra
++    url: ""
++    desc: Friend me on Facebook
++    share: true
++
+   - name: GitHub
+     icon: github
+     username: bencentra
+-    url: https://github.com/choesuhong
++    url: https://github.com/bencentra
+     desc: Fork me on GitHub
+     share: false
+ 
++  - name: LinkedIn
++    icon: linkedin
++    username: Ben Centra
++    url: https://www.linkedin.com/pub/ben-centra/47/769/60a
++    desc: Connect with me on LinkedIn
++    share: true
++
+   - name: Google+
+     icon: google-plus
+     username: ""
+@@ -98,6 +118,20 @@
+     desc: Subscribe on YouTube
+     share: false
+ 
++  - name: Instagram
++    icon: instagram
++    username: ""
++    url: ""
++    desc: Follow me on Instagram
++    share: false
++
++  - name: Pinterest
++    icon: pinterest
++    username: ""
++    url: ""
++    desc: Follow me on Pinterest
++    share: true
++
+   - name: SoundCloud
+     icon: soundcloud
+     username: ""
+Index: _posts/2015-04-20-welcome-to-jekyll copy.markdown
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/_posts/2015-04-20-welcome-to-jekyll copy.markdown b/_posts/2015-04-20-welcome-to-jekyll copy.markdown
+new file mode 100755
+--- /dev/null	(date 1635096042000)
++++ b/_posts/2015-04-20-welcome-to-jekyll copy.markdown	(date 1635096042000)
+@@ -0,0 +1,100 @@
++---
++layout: post
++title:  "LaTex 테스트"
++date:   2015-04-20 08:43:59
++author: Ben Centra
++categories: Jekyll
++tags:	jekyll welcome
++cover:  "/assets/instacode.png"
++use_math: true
++---
++
++$ 1+2=3 $
++
++$$
++\lim_{x\to 0}{\frac{e^x-1}{2x}}
++\overset{\left[\frac{0}{0}\right]}{\underset{\mathrm{H}}{=}}
++\lim_{x\to 0}{\frac{e^x}{2}}={\frac{1}{2}}
++$$
++
++
++Transformer에 대하여 학습한다.
++
++**부스트 캠프 30일차 학습 요약**
++- **학습** : Transformer(1), bahdanau attention 정리
++
++## 목차
++- [1. Transformer](#1-transformer)
++- [2. 30일차 후기](#2-30일차-후기)
++
++## 1. Transformer
++- Self Attention은 RNN 기반 Translation Model의 단점을 해결하기 위해 처음 등장했다.
++- RNN & Attention을 함께 사용했던 기존과는 달리 Attention 연산만을 이용하여 입력 문장의 representation을 학습하여 좀 더 parallel한 연산이 가능함과 동시에 학습속도가 빠르다는 장점을 보였다.
++
++### 1-1. Transformer: High-level view
++- Attention is all you need, NeurIPS'17
++- No more RNN or CNN modules
++
++### 1-2. RNN: Long-term dependency
++![1](https://user-images.githubusercontent.com/53552847/133054473-c5824a2a-cb42-4a1e-ac2f-c8cf8a1e5b2c.PNG)
++- 위의 그림과 같은 구조를 바탕으로 각 word의 정보가 흐른다.
++- time step이 지나면 지날수록 처음에 들어왔던 word에 대한 정보는 유실 혹은 변질될 수밖에 없다.
++
++### 1-3. Bi-Directional RNNs
++![2](https://user-images.githubusercontent.com/53552847/133054485-7419a2cd-7250-401f-9fe8-ddb297c2ddfb.PNG)
++-  왼쪽에서 오는 정보 뿐만 아니라 오른쪽에서 오는 정보 역시 함께 포함할 수 있도록, forward RNN과 backward RNN 두 개의 모듈을 병렬적으로 만든다.
++-  특정 time step t에 대하여 forward RNN에서 만들어진 hidden state vector와 backward state vector를 concatenate하여 기존의 hidden state vector의 2배에 해당하는 벡터를 각 단어의 encoding vector로서 가지게 된다.
++
++### 1-4. Transformer: Long-Term Dependency
++![3](https://user-images.githubusercontent.com/53552847/133054486-a80cba34-3464-413e-8eb9-0841b7f70709.PNG)
++- 이전에 설명했던 모듈들과 동일하게 입력 word에 대한 input vector가 주어질 때, 출력으로 나오는 vector들은 input sequence에서 주어진 각 단어별로 sequence 전체 내용을 잘 반영한 encoding vector가 output으로 나오는 것으로서, 입출력의 세팅은 동일하게 유지된다.
++- Seq2seq with Attention 모듈에서, decoder에서의 특정 time step에 대한 hidden state vector를 Transformer에서는 encoder에서의 hidden state vector라고 볼 수 있다.
++- 각 단어들의 hidden state vector의 내적을 바탕으로 내적에 기반한 유사도를 구하게 되는데, 이로부터 구한 유사도를 softmax를 취하여 가중치를 구한다. 이러한 가중치를 입력 hidden state vector과 연산하여 이를 가중평균하여 입력 word에 대한 encoding vector를 구할 수 있다.
++- 이전에 설명했던 모듈들에서는 decoder hidden state vector와 input hidden state vector 사이의 유사도를 구하였는데, 본 Transformer에서는 encoder hidden state vector들 사이의 유사도를 구한다는 측면에서 self-attention 모듈이라고 한다.
++
++### 1-5. 확장된 형태의 attention
++- self-attention을 통해 자기 자신과 내적 연산을 하게될 경우, 서로 다른 벡터와 내적 연산을 했을 때보다 훨씬 더 큰 값이 추출되고 결국 자기 자신에게 큰 가중치가 걸리는 형태가 나오게 되고 이로써 자기 자신의 정보만을 주로 포함한 벡터가 나오게 된다. 이러한 issue를 해결하기 위하여 확장된 형태의 attention을 사용한다.
++- 주어진 입력 벡터에서의 각 word에 해당하는 벡터들은 각각의 상황마다 다른 역할을 한다. (내적 연산을 통해 유사도를 구하고, 가중치합을 구한다.)
++- 먼저, 입력 vector가 마치 이전에 설명했던 decoder hidden state vector인 것처럼 우리에게 주어진 벡터 set들의 가중치, 유사도를 구하는 형태의 벡터로 사용되는데, 이 때 어떤 벡터를 선별적으로 가져올지에 대한 기준이 되는 벹어가 Query이다.
++- 어떤 단어의 Query 벡터가 각각의 단어들의 hidden state vector들과 내적을 통해 유사도가 구해지는데, 이 때 내적이 되는 각각의 재료 vector들을 Key vector라고 한다. 즉, 주어진 여러개의 key vector들 중에서 Qeury vector와 어떤 key vector가 높은 유사도를 가지는지에 대하여 찾을 수 있다.
++- 유사도를 softmax 취하여 이를 가중치로서 사용한다. 이러한 가중치와 실제로 연산되는 input hidden state vector를 value vector라고 하며, 이 연산을 통해 최종 가중평균된 encoding vector를 추출한다. 이 value vector는 처음에는 실제로 key vector와 동일하지만 쓰임이 다르다.
++- 하나의 sequence를 Attention을 통해 encoding하는 과정에서, 각 hidden state vector 들이 Q, K, V로서의 세 가지 역할을 하고 있는 것을 볼 수 있으며, 이들은 동일한 vector에서 출발했다 하더라도 각 역할에 따라 서로 다른 형태로 변환할 수 있도록, 별도의 linear transformation matrix가 각각 따로 정의 되어있어 3가지 역할이 모두 공유 되는 것이 아니라 서로 다른 vector로 변환될 수 있는 형태가 만들어진다.
++- K, V vector는 Q가 K에 의해 유사도를 연산한 후 이를 매칭되는 V와의 연산을 진행해야 하므로, K와 V의 개수는 정확하게 동일해야한다.
++- 1-4의 그림에서 볼 수 있듯이, 위의 방식대로 진행하게 되면, 첫 번째 단어로부터 Q, K, V vector를 만들었다 하더라도, 자기 자신과의 내적값이 다른 단어와의 내적보다 작을 수도 있게 된다. 이는, Q, K로의 서로 다른 변환이 존재하고 이로 인해 같은 벡터를 가지고 Q,  K를 만들었을 때에도 좀 더 유연한 유사도를 얻을 수 있다.
++- Q, K로부터 가중치가 얻어지고 이를 V와 연산하여 가중평균을 냄으로서 최종적인 각 word에 대한 encoding vector가 출력된다.
++- Self-Attention 모듈에서는 sequence의 길이가 길다 하더라도, 각 단어들은 Q, K, V 각각의 hidden state vector가 만들어질 것이고, Q, K 연산으로부터의 내적값이 크기만 하다면 즉, 유사도가 높기만 한다면 time step에 무관하여 멀리 있는 정보를 손쉽게 가져올 수 있다.
++- 이로서, 기존의 RNN에서 보이던 한계점을 극복할 수 있게 된다. 즉, Transformer Model은 근본적으로 Long-Term Dependency의 문제를 깔끔하게 해결한 형태의 sequence encoding 기법으로 생각할 수 있다.
++
++### 1-6. Transformer: Scaled Dot-Product Attention
++- Inputs: a query q and a set of key-value (k, v) pairs to an output
++- Qeury, Key, Value and Output is all vectors
++- Output is weighted sum of values
++- Weight of each value is computed by an inner product of query and correspoding key
++- Queries and Keys have same dimensionality $$d_k$$ and dimensionality of Value is $$d_v$$
++- Q와 K는 내적 연산이 가능해야하기 때문에, 같은 dimension이어야 하며, V는 softmax연산을 통해 계산된 scalar형태의 가중치와 연산이 되기 때문에 Q, K와 dimension이 동일할 필요는 없다.
++![4](https://user-images.githubusercontent.com/53552847/133054487-94460a77-300d-4035-828c-ae647d66ccbb.PNG)
++- Attention module의 최종적인 output의 차원은 "word의 개수 $xd_v$"가 된다. 흔히 output의 차원은 $$d_v$$라고 얘기하며 "word의 개수 x $d_v$"라고 말할 수 있는 이유는 실제 Transformer 구현상으로 동일한 shape으로 mapping된 Q, K, V가 사용되어 각 matrix의 shape은 모두 동일하기 때문이다.
++- 위의 query vector q에 대하여 stack한 형태의 matrix Q로 나타내면 다음의 그림처럼 나타낼 수 있다. 
++![5](https://user-images.githubusercontent.com/53552847/133054488-5021252e-709d-4e0e-ac74-42895e777412.PNG)
++![6](https://user-images.githubusercontent.com/53552847/133054490-6e024093-4858-4b8a-a31e-af5722553b41.PNG)
++- 특히, softmax 연산의 경우, 각 query 별로 연산을 수행해야 하므로 row-wise하게 연산한다.
++- Query vector에 대한 attention model의 계산을 행렬 연산으로 바꾸어 진행하게되면 GPU를 활용하여 굉장히 빠르게 병렬화하여 계산할 수 있으며 이러한 병렬적 행렬 연산을 바탕으로 transformer 모델은 기존의 RNN등에 비해서 상대적으로 학습이 빠른 특성을 가진다.(질문 후 삭제 :44:10)
++![7](https://user-images.githubusercontent.com/53552847/133054493-aa787175-a23f-4f2c-b154-692238a44c60.PNG)
++- softmax를 취하기 전에 Q, K의 내적값에 대하여 sqrt($$d_k$$)로 나눠준다.
++
++![8](https://user-images.githubusercontent.com/53552847/133054495-b63211ad-13db-4fd3-ab45-f6ffb5f20478.PNG)
++- Scaling 과정으로서 sqrt($$d_k$$)로 내적값을 왜 나눠주는가?
++    - Q, K의 원소들이 통계적으로 서로 독립이고 평균이 0, 분산이 1인 확률변수라고 가정할 때, 내적을 한 후의 평균과 분산은 각각 0, 'element의 수 * 분산'이 된다.
++    - 즉, Q, K의 dimension에 따라, 분산이 커지는 것을 알 수 있고, Q, K vector의 dimension이 엄청나게 커졌을 경우 이로 부터 연산된 유사도를 softmax 취하게 되면 확률분포가 어떤 큰 값에 몰리는 형태의 패턴이 나타날 수 있다.
++    - 반대로, 분산이 작았을 경우에는 확률 분포가 좀 더 고르게 Q에 대한 K의 확률값이 uniform distribution에 가까운 형태로 나타날 수 있다.
++    - 이러한 이유로 인하여, 내적의 참여하는 Q, K의 dimension이 얼마냐에 따라서 내적값의 분산이 크게 좌지우지 될 수 있고 이에 따라 의도치 않게 softmax로 부터 나온 확률분포가 어느 하나의 key에만 몰리는 극단적인 확률로 나올 수 있다.
++    - 이렇기에, Q, K의 내적값을 일정하게 유지시켜줌으로서 학습을 안정화시킬 수 있는데 이 때 내적값을 sqrt($$d_k$$)로 나눠주어 일정하게 유지시킬 수 있다.
++    - 이렇게 되면, Q, K의 dimensino이 얼마였던지 간에 상관없이 분산이 일정하게 1인 형태로 유지되는 형태로 나온다.
++- softmax의 값이 한 쪽으로 굉장히 몰리게 되는 경우에, 실제로 이 상태로 학습을 진행하게 되면 gradient vanishing이 발생할 수 있는 위험성이 있고, 의도치 않게 Q, K의 dimension을 크게 설정하고 scaling 없이 attention 모듈을 수행하였을 때, 종종 학습이 전혀 진행되지 않는 형태가 발생할 수 있다.
++
++## 5. 30일차 후기
++강의의 난이도가 높아지긴 했지만 양의 그닷 많지는 않아서 나름 쉬어갈 수 있던 하루였던 것 같다. 당연하게도 강의 뿐만 아니라 공부해야할 것들, 찾아보아야 할 것들이 수도 없이 많아서 쉴틈이 없었지만 마음의 짐은 많이 없는 채로 공부할 수 있었던 것 같다!
++
++더불어, 9주부터 20주까지 함께할 팀을 구해서 다행이나마 안심할 수 있었다. 팀원분들과 인사를 나눴는데 아니나 다를까 엄청 어색했었지만 그래도 함께할 팀원이 있다는 사실에 안도감을 느낄 수 있었고 어떤 프로젝트건 함께 열심히 해보고 싶다는 생각이 들었다.
++
++일단 NLP 이론에 집중해서 U-stage 동안 열심히 공부하자~! 다들 파이팅!!
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"f23f7170-8ca5-427e-bb46-43177f1c846e\" name=\"변경\" comment=\"\">\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/_config.yml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/_config.yml\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"ProjectId\" id=\"1zlxDbjeXBDjkd88EyDYkFhGfNE\" />\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\" />\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\">\n    <property name=\"RunOnceActivity.OpenProjectViewOnStart\" value=\"true\" />\n    <property name=\"RunOnceActivity.ShowReadmeOnStart\" value=\"true\" />\n    <property name=\"WebServerToolWindowFactoryState\" value=\"true\" />\n    <property name=\"last_opened_file_path\" value=\"$PROJECT_DIR$/_posts\" />\n    <property name=\"node.js.detected.package.eslint\" value=\"true\" />\n    <property name=\"node.js.detected.package.tslint\" value=\"true\" />\n    <property name=\"node.js.selected.package.eslint\" value=\"(autodetect)\" />\n    <property name=\"node.js.selected.package.tslint\" value=\"(autodetect)\" />\n  </component>\n  <component name=\"RecentsManager\">\n    <key name=\"CopyFile.RECENT_KEYS\">\n      <recent name=\"$PROJECT_DIR$/_posts\" />\n    </key>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"애플리케이션 수준\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"디폴트 작업\">\n      <changelist id=\"f23f7170-8ca5-427e-bb46-43177f1c846e\" name=\"변경\" comment=\"\" />\n      <created>1634717223911</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1634717223911</updated>\n      <workItem from=\"1634717228922\" duration=\"2280000\" />\n      <workItem from=\"1634736358435\" duration=\"3000\" />\n      <workItem from=\"1634776670476\" duration=\"5110000\" />\n    </task>\n    <servers />\n  </component>\n  <component name=\"TypeScriptGeneratedFilesManager\">\n    <option name=\"version\" value=\"3\" />\n  </component>\n  <component name=\"Vcs.Log.Tabs.Properties\">\n    <option name=\"TAB_STATES\">\n      <map>\n        <entry key=\"MAIN\">\n          <value>\n            <State />\n          </value>\n        </entry>\n      </map>\n    </option>\n    <option name=\"oldMeFiltersMigrated\" value=\"true\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 00adce5c8dbe3c0ef356eeb3be9908d6c7a417f8)
++++ b/.idea/workspace.xml	(date 1635096031000)
+@@ -1,12 +1,23 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+-  <component name="AutoImportSettings">
+-    <option name="autoReloadType" value="SELECTIVE" />
+-  </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="f23f7170-8ca5-427e-bb46-43177f1c846e" name="변경" comment="">
++    <list default="true" id="a3965d96-f2ae-4d5e-8aa8-7118cc334341" name="변경" comment="">
++      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/choesuhong.github.io.iml" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/Gemfile" beforeDir="false" afterPath="$PROJECT_DIR$/Gemfile" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/_config.yml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/_includes/head.html" beforeDir="false" afterPath="$PROJECT_DIR$/_includes/head.html" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/_includes/mathjax_support.html" beforeDir="false" afterPath="$PROJECT_DIR$/_includes/mathjax_support.html" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/_layouts/default.html" beforeDir="false" afterPath="$PROJECT_DIR$/_layouts/default.html" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/_layouts/post.html" beforeDir="false" afterPath="$PROJECT_DIR$/_layouts/post.html" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/_posts/2021-09-13-Intro to NLP, Bag of Words.md" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/_posts/2021-10-12-MRC Intro and Python Basics.md" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/_posts/2021-10-13-Extraction based MRC.md" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/_posts/2021-10-14-Generation based MRC.md" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/_sass/bourbon/css3/_selection.scss" beforeDir="false" afterPath="$PROJECT_DIR$/_sass/bourbon/css3/_selection.scss" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -15,39 +26,38 @@
+   </component>
+   <component name="Git.Settings">
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
++    <option name="RESET_MODE" value="MIXED" />
+   </component>
+-  <component name="ProjectId" id="1zlxDbjeXBDjkd88EyDYkFhGfNE" />
++  <component name="GitSEFilterConfiguration">
++    <file-type-list>
++      <filtered-out-file-type name="LOCAL_BRANCH" />
++      <filtered-out-file-type name="REMOTE_BRANCH" />
++      <filtered-out-file-type name="TAG" />
++      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
++    </file-type-list>
++  </component>
++  <component name="ProjectId" id="1zxfzFyQUSvF9Fcw5q3AxoHfwkG" />
+   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+   <component name="ProjectViewState">
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
++    <option name="showMembers" value="true" />
+   </component>
+   <component name="PropertiesComponent">
+     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+     <property name="WebServerToolWindowFactoryState" value="true" />
+-    <property name="last_opened_file_path" value="$PROJECT_DIR$/_posts" />
+-    <property name="node.js.detected.package.eslint" value="true" />
+-    <property name="node.js.detected.package.tslint" value="true" />
+-    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+-    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+-  </component>
+-  <component name="RecentsManager">
+-    <key name="CopyFile.RECENT_KEYS">
+-      <recent name="$PROJECT_DIR$/_posts" />
+-    </key>
+   </component>
+   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="애플리케이션 수준" UseSingleDictionary="true" transferred="true" />
+   <component name="TaskManager">
+     <task active="true" id="Default" summary="디폴트 작업">
+-      <changelist id="f23f7170-8ca5-427e-bb46-43177f1c846e" name="변경" comment="" />
+-      <created>1634717223911</created>
++      <changelist id="a3965d96-f2ae-4d5e-8aa8-7118cc334341" name="변경" comment="" />
++      <created>1635094919835</created>
+       <option name="number" value="Default" />
+       <option name="presentableId" value="Default" />
+-      <updated>1634717223911</updated>
+-      <workItem from="1634717228922" duration="2280000" />
+-      <workItem from="1634736358435" duration="3000" />
+-      <workItem from="1634776670476" duration="5110000" />
++      <updated>1635094919835</updated>
++      <workItem from="1635094921628" duration="26000" />
++      <workItem from="1635094973486" duration="715000" />
+     </task>
+     <servers />
+   </component>
+Index: _posts/2021-09-13-Intro to NLP, Bag of Words.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/_posts/2021-09-13-Intro to NLP, Bag of Words.md b/_posts/2021-09-13-Intro-to-NLP, Bag-of-Words.md
+rename from _posts/2021-09-13-Intro to NLP, Bag of Words.md
+rename to _posts/2021-09-13-Intro-to-NLP, Bag-of-Words.md
+--- a/_posts/2021-09-13-Intro to NLP, Bag of Words.md	(revision 00adce5c8dbe3c0ef356eeb3be9908d6c7a417f8)
++++ b/_posts/2021-09-13-Intro-to-NLP, Bag-of-Words.md	(date 1635096042000)
+@@ -1,12 +1,11 @@
+ ---
+ layout: post
+ title:  "Intro to NLP, Bag-of-Words"
+-date:   2021-09-13 11:40:00 +0900
++date:   2015-04-18T14:25:52-05:00
+ author: choesuhong
+ categories: nlp-Ustage
+ tags: ['nlp','UstageW']
+ use_math: true
+-published: true
+ ---
+ 
+ # 목표
+@@ -62,4 +61,4 @@
+ 
+ ![image-20210906150108098](https://raw.githubusercontent.com/choesuhong/save-image-repo/image/img/image-20210906145954273.png)
+ 
+-영상에 나오는 NavieBayes 계산해보기
++영상에 나오는 NavieBayes 계산해보기
+\ No newline at end of file
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+deleted file mode 100644
+diff --git a/.idea/modules.xml b/.idea/modules.xml
+deleted file mode 100644
